@@ -1,19 +1,54 @@
 const pool = require("../db");
 const bcrypt = require ("bcrypt");
 
-const logIn = (req, res) => {
+const logIn = async (req, res) => {
  const{email, password} = req.body;
 
- if (email == "vikas@gmail.com" && password == "0000"){
-    return res.jason({
-        status : "success"
-    })
- } else {
-    return res.status(401).jason({
-        status: "failed"
-    })
- }
+ if (!email ||  !password) {
+    return res.status(400).json({
+      success : false,
+      message : "email and password are required."
+    });
+   
+  }
 
+  let userDetails
+    
+  try {
+     userDetails = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+
+    if (userDetails.rows.length == 0){
+      return res.status(401).json({
+        success : false,
+        message : "Email or Password invalid"
+      })
+   }
+
+  } catch (err) {
+    console.error(err);
+    res.send("Error ❌");
+  }
+
+   try {
+    const compareValue = await bcrypt.compare(password, userDetails.rows[0].password);
+
+    if (compareValue){
+    return res.status(200).json({
+      success : true,
+      message : " Login Success"
+    })
+   }
+   if (!compareValue) {
+    return res.status(401).json({
+        success: false,
+        message: "Invalid email or password"
+    });
+}
+
+   } catch (err) {
+    console.error(err);
+    res.send("Error ❌");
+   }
 }
  const register = async (req, res) => {
   const {name, email, password} = req.body;
@@ -24,14 +59,21 @@ const logIn = (req, res) => {
     });
    
   }
-   const existingUser = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
-   
-   if (existingUser.rows.length > 0){
+   try {
+    const existingUser = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+
+    if (existingUser.rows.length > 0){
       return res.status(409).json({
         success : false,
         message : "User already exist"
       })
    }
+
+   } catch (err) {
+    console.error(err);
+    res.send("Error ❌");
+   }
+   
     const hashPassword = await bcrypt.hash(password,10); 
 
    try{
