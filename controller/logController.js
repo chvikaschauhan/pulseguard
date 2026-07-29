@@ -1,5 +1,6 @@
 const pool = require("../db");
 const bcrypt = require ("bcrypt");
+const jwt = require ("jsonwebtoken");
 
 const logIn = async (req, res) => {
  const{email, password} = req.body;
@@ -33,9 +34,18 @@ const logIn = async (req, res) => {
     const compareValue = await bcrypt.compare(password, userDetails.rows[0].password);
 
     if (compareValue){
+      const token = jwt.sign(
+    {
+        id: userDetails.rows[0].id
+    },
+    process.env.JWT_SECRET,
+    {
+        expiresIn: "1h"
+    }
+);
     return res.status(200).json({
       success : true,
-      message : " Login Success"
+      token : token
     })
    }
    if (!compareValue) {
