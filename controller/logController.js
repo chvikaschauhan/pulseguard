@@ -12,11 +12,9 @@ const logIn = async (req, res) => {
     });
    
   }
-
-  let userDetails
     
   try {
-     userDetails = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
+      const userDetails = await pool.query("SELECT * FROM users WHERE email=$1", [email]);
 
     if (userDetails.rows.length == 0){
       return res.status(401).json({
@@ -25,12 +23,6 @@ const logIn = async (req, res) => {
       })
    }
 
-  } catch (err) {
-    console.error(err);
-    res.send("Error ❌");
-  }
-
-   try {
     const compareValue = await bcrypt.compare(password, userDetails.rows[0].password);
 
     if (compareValue){
@@ -97,10 +89,8 @@ const logIn = async (req, res) => {
     res.send("Error ❌");
    }
    
-
   }
  
-
 const insertLogs = async (req, res) => {
   try {
     await pool.query(
