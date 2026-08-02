@@ -2,6 +2,38 @@ const pool = require("../db");
 const bcrypt = require ("bcrypt");
 const jwt = require ("jsonwebtoken");
 
+const getProfile = async (req, res) => {
+
+  const userId = req.user.id;
+   if(!userId) {
+    return res.status(400).json({
+      success : false,
+        message : "UserID is empty"
+    })
+   }
+
+  try {
+    const userDetails = await pool.query("SELECT id, name,email FROM users WHERE id=$1", [userId]);
+
+    if(userDetails.rows.length){
+      return res.status(200).json(userDetails.rows);
+    } else {
+      return res.status(400).json({
+        success : false,
+        message : "User does not Exist"
+      })
+    }
+  } catch (err) {
+    console.error(err);
+    
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+    });  
+  }
+
+}
+
 const logIn = async (req, res) => {
  const{email, password} = req.body;
 
@@ -49,7 +81,11 @@ const logIn = async (req, res) => {
 
    } catch (err) {
     console.error(err);
-    res.send("Error ❌");
+    
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+    });
    }
 }
  const register = async (req, res) => {
@@ -73,7 +109,11 @@ const logIn = async (req, res) => {
 
    } catch (err) {
     console.error(err);
-    res.send("Error ❌");
+    
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+    });
    }
    
     const hashPassword = await bcrypt.hash(password,10); 
@@ -86,7 +126,11 @@ const logIn = async (req, res) => {
     });
    } catch (err) {
     console.error(err);
-    res.send("Error ❌");
+    
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+    });
    }
    
   }
@@ -101,7 +145,11 @@ const insertLogs = async (req, res) => {
     res.send("Data inserted ✅");
   } catch (err) {
     console.error(err);
-    res.send("Error ❌");
+    
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error"
+    });
   }
 }
 
@@ -110,4 +158,5 @@ module.exports = {
     logIn,
     insertLogs,
     register,
+    getProfile
 }
