@@ -9,15 +9,23 @@ const authMiddleware = (req, res, next) => {
     });
  }
 
-     if (!authHeader.startsWith("Bearer ")) {
+ const token = authHeader.split(" ")[1];
+
+  if (!authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
         success: false,
         message: "Invalid Authorization header"
     });
 }
 
-  const token = authHeader.split(" ")[1];
-  
+
+     if (!authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+        success: false,
+        message: "Invalid Authorization header"
+    });
+}
+ 
 
     
     try {
